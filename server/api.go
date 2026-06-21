@@ -116,7 +116,7 @@ func (p *Plugin) updateChannel(request *model.PostActionIntegrationRequest, expe
 		Id:        request.PostId,
 		UserId:    p.botID,
 		ChannelId: request.ChannelId,
-		Message:   fmt.Sprintf("**Expense claim from %s %s**\n\n%s", user.FirstName, user.LastName, message),
+		Message:   fmt.Sprintf("**Expense claim from %s**\n\n%s", user.Username, message),
 		FileIds:   expense.FileIDs,
 	}
 	if _, appError = p.API.UpdatePost(post); appError != nil {
