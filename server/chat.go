@@ -126,14 +126,14 @@ func (p *Plugin) MessageHasBeenPosted(c *plugin.Context, post *model.Post) {
 			_ = p.sendDM(post.UserId, "System error, please try again or type ```reset``` to stop the expense.")
 			return
 		}
-		_ = p.sendDM(post.UserId, "**Upload the invoice or a picture of the receipt.**\n\nYou can drag 'n' drop a file into the chat window, or use the paperclip in the bottom right corner.\n\nIf you have multiple receipts, take a single picture of all the receipts.")
+		_ = p.sendDM(post.UserId, "**Upload the invoice or a picture of the receipt.**\n\nYou can drag 'n' drop a file into the chat window, or use the paperclip in the bottom right corner.\n\nIf you have multiple receipts, attach them all to a single message.")
 
 	case DraftStateAskFile:
-		if len(post.FileIds) != 1 {
-			_ = p.sendDM(post.UserId, "Submit a single file.")
+		if len(post.FileIds) == 0 {
+			_ = p.sendDM(post.UserId, "Submit at least one file.")
 			return
 		}
-		draft.Data["file"] = post.FileIds[0]
+		draft.Data["file"] = strings.Join(post.FileIds, ",")
 		if err = p.createExpense(post.UserId, draft); err != nil {
 			p.API.LogError("failed to create expense", "err", err.Error())
 			_ = p.sendDM(post.UserId, "System error, please try again or type ```reset``` to stop the expense.")

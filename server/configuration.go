@@ -24,8 +24,7 @@ type configuration struct {
 // Clone shallow copies the configuration. Your implementation may require a deep copy if
 // your configuration has reference types.
 func (c *configuration) Clone() *configuration {
-	var clone = *c
-	return &clone
+	return new(*c)
 }
 
 // getConfiguration retrieves the active configuration under lock, making it safe to use

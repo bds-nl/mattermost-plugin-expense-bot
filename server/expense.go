@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mattermost/mattermost/server/public/model"
 	"github.com/pkg/errors"
@@ -16,7 +17,7 @@ func (p *Plugin) createExpense(userID string, draft *Draft) error {
 		Name:        draft.Data["name"],
 		Amount:      draft.Data["amount"],
 		Description: draft.Data["description"],
-		FileIDs:     []string{draft.Data["file"]},
+		FileIDs:     strings.Split(draft.Data["file"], ","),
 	}
 
 	message, err := p.formatExpense(expense)
@@ -47,18 +48,21 @@ func (p *Plugin) formatExpense(expense *Expense) (string, error) {
 	case ExpenseStateRejected:
 		state = ":x: **Rejected**"
 	}
-	file, appErr := p.API.GetFileInfo(expense.FileIDs[0])
-	if appErr != nil {
-		return "", errors.Wrap(appErr, "failed to get file")
+	links := make([]string, 0, len(expense.FileIDs))
+	for _, fileID := range expense.FileIDs {
+		file, appErr := p.API.GetFileInfo(fileID)
+		if appErr != nil {
+			return "", errors.Wrap(appErr, "failed to get file")
+		}
+		links = append(links, fmt.Sprintf("[%s](%s)", file.Name, fmt.Sprintf("%s/api/v4/files/%s", p.getBaseURL(), file.Id)))
 	}
-	message := fmt.Sprintf("|Status|%s|\n|-|-|\n|Bank account|%s|\n|Name|%s|\n|Amount|%s|\n|Description|%s|\n|File|[%s](%s)|\n",
+	message := fmt.Sprintf("|Status|%s|\n|-|-|\n|Bank account|%s|\n|Name|%s|\n|Amount|%s|\n|Description|%s|\n|Files|%s|\n",
 		state,
 		expense.Account,
 		expense.Name,
 		expense.Amount,
 		expense.Description,
-		file.Name,
-		fmt.Sprintf("%s/api/v4/files/%s", p.getBaseURL(), file.Id),
+		strings.Join(links, ", "),
 	)
 	return message, nil
 }
@@ -81,7 +85,7 @@ func (p *Plugin) sendChannelMessage(expense *Expense) error {
 	if appError != nil {
 		return errors.Wrap(appError, "failed to get user")
 	}
-	title := fmt.Sprintf("**Expense claim from %s %s**", user.FirstName, user.LastName)
+	title := fmt.Sprintf("**Expense claim from %s**", user.Username)
 	message, err := p.formatExpense(expense)
 	if err != nil {
 		return errors.Wrap(err, "failed to format expense")
@@ -101,7 +105,7 @@ func (p *Plugin) sendChannelMessage(expense *Expense) error {
 			Type:  model.PostActionTypeButton,
 			Style: "success",
 			Integration: &model.PostActionIntegration{
-				URL: fmt.Sprintf("/plugins/com.mattermost.plugin-expense-bot/api/expenses/%s/%s", expense.ID, ExpenseStatePaid),
+				URL: fmt.Sprintf("/plugins/%s/api/expenses/%s/%s", manifest.Id, expense.ID, ExpenseStatePaid),
 			},
 		},
 		{
@@ -110,15 +114,15 @@ func (p *Plugin) sendChannelMessage(expense *Expense) error {
 			Type:  model.PostActionTypeButton,
 			Style: "danger",
 			Integration: &model.PostActionIntegration{
-				URL: fmt.Sprintf("/plugins/com.mattermost.plugin-expense-bot/api/expenses/%s/%s", expense.ID, ExpenseStateRejected),
+				URL: fmt.Sprintf("/plugins/%s/api/expenses/%s/%s", manifest.Id, expense.ID, ExpenseStateRejected),
 			},
 		},
 	}
-	attachment := []*model.SlackAttachment{{
+	attachment := []*model.MessageAttachment{{
 		AuthorName: "",
 		Actions:    actions,
 	}}
-	model.ParseSlackAttachment(post, attachment)
+	model.ParseMessageAttachment(post, attachment)
 	_, appErr = p.API.UpdatePost(post)
 	if appErr != nil {
 		return errors.Wrap(appErr, "failed to update post")
