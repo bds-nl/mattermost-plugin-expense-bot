@@ -13,7 +13,6 @@ require (
 require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/beevik/etree v1.6.0 // indirect
-	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dyatlov/go-opengraph/opengraph v0.0.0-20220524092352-606d7b1e5f8a // indirect
 	github.com/fatih/color v1.19.0 // indirect
@@ -34,7 +33,6 @@ require (
 	github.com/mattermost/gosaml2 v0.10.0 // indirect
 	github.com/mattermost/ldap v0.0.0-20231116144001-0f480c025956 // indirect
 	github.com/mattermost/logr/v2 v2.0.22 // indirect
-	github.com/mattermost/mattermost/server/v8 v8.0.0-20260619183049-ee04f28e873d // indirect
 	github.com/mattermost/xml-roundtrip-validator v0.1.0 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
