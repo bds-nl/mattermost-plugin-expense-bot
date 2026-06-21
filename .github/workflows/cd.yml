@@ -6,7 +6,7 @@ on:
 
 jobs:
   plugin-cd:
-    uses: mattermost/actions-workflows/.github/workflows/community-plugin-cd.yml@d9defa3e455bdbf889573e112ad8d05b91d66b4c
+    uses: mattermost/actions-workflows/.github/workflows/community-plugin-cd.yml@86a78bd5bf6e009254bd0e23e316601d9d0db472
     secrets: inherit
     permissions:
       contents: write
